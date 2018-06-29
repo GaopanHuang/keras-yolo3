@@ -3,8 +3,23 @@
 """
 Run a YOLO_v3 style detection model on test images.
 """
+import os
+#gpu_id = '1,2'
+gpu_id = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
+os.system('echo $CUDA_VISIBLE_DEVICES')
+
+import tensorflow as tf
+#config = tf.ConfigProto(log_device_placement=True, allow_soft_placement=True)
+config = tf.ConfigProto(allow_soft_placement=True)
+config.gpu_options.allow_growth = True
+#config.gpu_options.per_process_gpu_memory_fraction = 0.4
+sess = tf.Session(config=config)
+from keras import backend as K
+K.set_session(sess)
 
 import colorsys
+import io
 import os
 from timeit import default_timer as timer
 
@@ -13,15 +28,19 @@ from keras import backend as K
 from keras.models import load_model
 from keras.layers import Input
 from PIL import Image, ImageFont, ImageDraw
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from yolo3.utils import letterbox_image
 
 class YOLO(object):
     def __init__(self):
-        self.model_path = 'model_data/yolo.h5' # model path or trained weights path
+        self.model_path = 'logs/000/trained_weights_final_kangaroo.h5' # model path or trained weights path
+        #self.model_path = 'model_data/yolo.h5' # model path or trained weights path
         self.anchors_path = 'model_data/yolo_anchors.txt'
-        self.classes_path = 'model_data/coco_classes.txt'
+        self.classes_path = 'model_data/kangaroo_classes.txt'
+        #self.classes_path = 'model_data/coco_classes.txt'
         self.score = 0.3
         self.iou = 0.45
         self.class_names = self._get_class()
@@ -147,7 +166,7 @@ class YOLO(object):
             del draw
 
         end = timer()
-        print(end - start)
+        #print(end - start)
         return image
 
     def close_session(self):
@@ -197,16 +216,26 @@ def detect_video(yolo, video_path, output_path=""):
 
 
 def detect_img(yolo):
-    while True:
-        img = input('Input image filename:')
+    #while True:
+    #for i in range(0,7):
+    for i in range(163,185):
+        numstr = str(i)
+        image_id = numstr.zfill(5)
+        if not os.path.exists('kangaroo/images/%s.jpg'% (image_id)):
+            continue
+        print ('image %s'%(image_id))
+    #    img = input('Input image filename:')
         try:
-            image = Image.open(img)
+    #        image = Image.open(img)
+            image = Image.open('kangaroo/images/%s.jpg'% (image_id))
         except:
             print('Open Error! Try again!')
             continue
         else:
             r_image = yolo.detect_image(image)
-            r_image.show()
+            r_image.save('kangaroo/test/images/%s_detected.jpg'%(image_id))
+            #r_image.save('test.jpg')
+            #r_image.show()
     yolo.close_session()
 
 
