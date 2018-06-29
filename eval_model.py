@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 get mAP of a YOLO_v3 style detection model on valuation images.
+based on https://github.com/fizyr/keras-retinanet/blob/master/keras_retinanet/utils/eval.py
 """
 import os
 #gpu_id = '2,3'
