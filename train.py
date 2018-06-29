@@ -29,9 +29,9 @@ from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def _main():
-    annotation_path = 'train144.txt'
+    annotation_path = 'raccoon_train.txt'
     log_dir = 'logs/000/'
-    classes_path = 'model_data/kangaroo_classes.txt'
+    classes_path = 'model_data/raccoon_classes.txt'
     anchors_path = 'model_data/yolo_anchors.txt'
     class_names = get_classes(classes_path)
     num_classes = len(class_names)
@@ -45,7 +45,7 @@ def _main():
             freeze_body=2, weights_path='model_data/tiny_yolo_weights.h5')
     else:
         model = create_model(input_shape, anchors, num_classes,
-            freeze_body=2, weights_path='model_data/yolo_weights.h5') # make sure you know what you freeze
+            freeze_body=2, weights_path='logs/000/trained_weights_stage_1_raccoon.h5')#'model_data/yolo_weights.h5') # make sure you know what you freeze
 
     logging = TensorBoard(log_dir=log_dir)
     checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
@@ -64,8 +64,8 @@ def _main():
 
     # Train with frozen layers first, to get a stable loss.
     # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
-    if True:
-    #if False:
+    if False:
+    #if True:
         model.compile(optimizer=Adam(lr=1e-3), loss={
             # use custom yolo_loss Lambda layer.
             'yolo_loss': lambda y_true, y_pred: y_pred})
@@ -79,7 +79,7 @@ def _main():
                 epochs=100,
                 initial_epoch=0,
                 callbacks=[logging, checkpoint, early_stopping])
-        model.save_weights(log_dir + 'trained_weights_stage_1_kangaroo.h5')
+        model.save_weights(log_dir + 'trained_weights_stage_1_raccoon.h5')
 
     # Unfreeze and continue training, to fine-tune.
     # Train longer if the result is not good.
@@ -98,7 +98,7 @@ def _main():
             epochs=100,
             initial_epoch=0,
             callbacks=[logging, checkpoint, reduce_lr, early_stopping])
-        model.save_weights(log_dir + 'trained_weights_final_kangaroo.h5')
+        model.save_weights(log_dir + 'trained_weights_final_raccoon.h5')
 
     # Further training if needed.
 

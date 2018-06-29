@@ -36,10 +36,10 @@ from yolo3.utils import letterbox_image
 
 class YOLO(object):
     def __init__(self):
-        self.model_path = 'logs/000/trained_weights_final_kangaroo.h5' # model path or trained weights path
+        self.model_path = 'model_data/trained_weights_final_raccoon.h5' # model path or trained weights path
         #self.model_path = 'model_data/yolo.h5' # model path or trained weights path
         self.anchors_path = 'model_data/yolo_anchors.txt'
-        self.classes_path = 'model_data/kangaroo_classes.txt'
+        self.classes_path = 'model_data/raccoon_classes.txt'
         #self.classes_path = 'model_data/coco_classes.txt'
         self.score = 0.3
         self.iou = 0.45 #iou of NMS, using for detection
@@ -335,7 +335,7 @@ class YOLO(object):
         return self._get_map(all_detections, all_annotations, iou_threshold=iou_threshold)
 
 def evaluate_map(yolo):
-    print (yolo.evaluate('val.txt',0.5,True))
+    print (yolo.evaluate('raccoon_val.txt',0.5,True))
     yolo.close_session()
 
 
