@@ -5,7 +5,7 @@ Run a YOLO_v3 style detection model on test images.
 """
 import os
 #gpu_id = '1,2'
-gpu_id = '3'
+gpu_id = '0'
 os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
 os.system('echo $CUDA_VISIBLE_DEVICES')
 
@@ -36,13 +36,13 @@ from yolo3.utils import letterbox_image
 
 class YOLO(object):
     def __init__(self):
-        self.model_path = 'logs/000/trained_weights_final_kangaroo.h5' # model path or trained weights path
+        self.model_path = 'model_data/trained_weights_final_gestures.h5' # model path or trained weights path
         #self.model_path = 'model_data/yolo.h5' # model path or trained weights path
         self.anchors_path = 'model_data/yolo_anchors.txt'
-        self.classes_path = 'model_data/kangaroo_classes.txt'
+        self.classes_path = '../public_data/gestures_data/gestures_classes.txt'
         #self.classes_path = 'model_data/coco_classes.txt'
         self.score = 0.3
-        self.iou = 0.45
+        self.iou = 0.4
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
         self.sess = K.get_session()
@@ -186,32 +186,29 @@ def detect_video(yolo, video_path, output_path=""):
     if isOutput:
         print("!!! TYPE:", type(output_path), type(video_FourCC), type(video_fps), type(video_size))
         out = cv2.VideoWriter(output_path, video_FourCC, video_fps, video_size)
-    accum_time = 0
-    curr_fps = 0
-    fps = "FPS: ??"
-    prev_time = timer()
     while True:
         return_value, frame = vid.read()
-        image = Image.fromarray(frame)
-        image = yolo.detect_image(image)
-        result = np.asarray(image)
-        curr_time = timer()
-        exec_time = curr_time - prev_time
-        prev_time = curr_time
-        accum_time = accum_time + exec_time
-        curr_fps = curr_fps + 1
-        if accum_time > 1:
-            accum_time = accum_time - 1
+        if return_value:
+            prev_time = timer()
+            image = Image.fromarray(frame)
+            image = yolo.detect_image(image)
+            result = np.asarray(image)
+            curr_time = timer()
+            exec_time = curr_time - prev_time
+            curr_fps = int(1./exec_time)
             fps = "FPS: " + str(curr_fps)
-            curr_fps = 0
-        cv2.putText(result, text=fps, org=(3, 15), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=0.50, color=(255, 0, 0), thickness=2)
-        cv2.namedWindow("result", cv2.WINDOW_NORMAL)
-        cv2.imshow("result", result)
-        if isOutput:
-            out.write(result)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+            cv2.putText(result, text=fps, org=(3, 15), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                        fontScale=0.50, color=(255, 0, 0), thickness=2)
+            #cv2.namedWindow("result", cv2.WINDOW_NORMAL)
+            #cv2.imshow("result", result)
+            if isOutput:
+                out.write(result)
+            #if cv2.waitKey(1) & 0xFF == ord('q'):
+            #    break
+        else:
             break
+    vid.release()
+    out.release()
     yolo.close_session()
 
 

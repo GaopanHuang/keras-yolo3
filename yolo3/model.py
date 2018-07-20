@@ -226,6 +226,15 @@ def yolo_eval(yolo_outputs,
     scores_ = K.concatenate(scores_, axis=0)
     classes_ = K.concatenate(classes_, axis=0)
 
+
+    #object will not be overlapped for each class, number of all object is samll than 200
+    max_boxes_tensor_all = K.constant(200, dtype='int32')
+    nms_index = tf.image.non_max_suppression(
+            boxes_, scores_, max_boxes_tensor_all, iou_threshold=iou_threshold)
+    boxes_ = K.gather(boxes_, nms_index)
+    scores_ = K.gather(scores_, nms_index)
+    classes_ = K.gather(classes_, nms_index)
+
     return boxes_, scores_, classes_
 
 
